@@ -1,25 +1,18 @@
 <!DOCTYPE html>
 
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+<%- include('./partials/_head', { title: 'Login' }) %>
 
-    <title></title>
-  </head>
+<body>
+  <%- include('./partials/_header', { user: locals.user }) %>
+  <h1>please log in</h1>
+  <form action="/auth/login" method="POST">
+    <label for="username">Username</label>
+    <input name="username" placeholder="username" type="text" />
+    <label for="password">Password</label>
+    <input name="password" type="password" />
+    <button>Log In</button>
+  </form>
+</body>
 
-  <body>
-    <h1>please log in</h1>
-
-    <form action="/auth/login" method="POST">
-      <label for="username">Username</label>
-
-      <input name="username" placeholder="username" type="text" />
-
-      <label for="password">Password</label>
-
-      <input name="password" type="password" />
-
-      <button>Log In</button>
-    </form>
-  </body>
 </html>
