@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('./partials/_head', { title: 'My Files' }) %>
+
+<body>
+  <%- include('./partials/_header', { user: user }) %>
+
+  <div class="container mt-4">
+    <h2>My Files in "<%= currentDirectory.name || 'Root' %>"</h2>
+
+    <a href="/directory/new" class="btn btn-success mb-3">Create New Directory</a>
+
+    <% if (currentDirectory.parentId) { %>
+    <a href="/directory/<%= currentDirectory.parentId %>" class="btn btn-secondary">Back to Parent Directory</a>
+    <% } %>
+
+    <% if (currentDirectory.children.length > 0) { %>
+    <h3>Subdirectories</h3>
+    <ul class="list-group mb-4">
+      <% currentDirectory.children.forEach(directory => { %>
+      <li class="list-group-item">
+        <a href="/directory/<%= directory.id %>"><%= directory.name %></a>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+
+    <% if (currentDirectory.files.length > 0) { %>
+    <h3>Files</h3>
+    <ul class="list-group">
+      <% currentDirectory.files.forEach(file => { %>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span><%= file.filename %></span>
+        <a href="/files/<%= file.id %>" class="btn btn-primary btn-sm">Download</a>
+      </li>
+      <% }) %>
+    </ul>
+    <% } else { %>
+    <div class="alert alert-info mt-3" role="alert">
+      This directory is empty.
+    </div>
+    <% } %>
+  </div>
+</body>
+
+</html>

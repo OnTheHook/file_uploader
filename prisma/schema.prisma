@@ -14,9 +14,11 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  username String @unique
-  password String
+  id        Int         @id @default(autoincrement())
+  username  String      @unique
+  password  String
+  files     File[]
+  Directory Directory[]
 }
 
 model Session {
@@ -24,4 +26,25 @@ model Session {
   sid       String   @unique
   data      String
   expiresAt DateTime
+}
+
+model File {
+  id          Int        @id @default(autoincrement())
+  filename    String
+  path        String
+  userId      Int
+  user        User       @relation(fields: [userId], references: [id])
+  Directory   Directory? @relation(fields: [directoryId], references: [id])
+  directoryId Int?
+}
+
+model Directory {
+  id       Int         @id @default(autoincrement())
+  name     String
+  userId   Int
+  user     User        @relation(fields: [userId], references: [id])
+  files    File[]
+  parentId Int? // Optional field to allow nested directories
+  parent   Directory?  @relation("DirectoryParent", fields: [parentId], references: [id])
+  children Directory[] @relation("DirectoryParent")
 }

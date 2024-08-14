@@ -45,7 +45,8 @@ passport.deserializeUser(async (id, done) => {
       where: { id: id },
     });
 
-    done(null, user);
+    const sentUserData = { id: user.id, username: user.username };
+    done(null, sentUserData);
   } catch (err) {
     done(err, null);
   }

@@ -4,6 +4,7 @@ const passport = require("./config/passportConfig");
 const authRoutes = require("./routes/auth");
 const protectedRoutes = require("./routes/protected");
 const indexRoutes = require("./routes/index");
+const fileRoutes = require("./routes/file");
 const path = require("path");
 const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
 const { PrismaClient } = require("@prisma/client");
@@ -36,6 +37,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Routes
 app.use("/", indexRoutes);
+app.use("/", fileRoutes);
 app.use("/auth", authRoutes);
 app.use("/protected", protectedRoutes);
 
