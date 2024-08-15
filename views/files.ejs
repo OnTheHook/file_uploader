@@ -8,12 +8,13 @@
   <div class="container mt-4">
     <h2>My Files in "<%= currentDirectory.name || 'Root' %>"</h2>
 
-    <a href="/directory/new" class="btn btn-success mb-3">Create New Directory</a>
+    <span class="align-baseline">
+      <a href="/directory/create" class="btn btn-success mb-3">Create New Directory</a>
 
-    <% if (currentDirectory.parentId) { %>
-    <a href="/directory/<%= currentDirectory.parentId %>" class="btn btn-secondary">Back to Parent Directory</a>
-    <% } %>
-
+      <% if (currentDirectory.parentId) { %>
+      <a href="/directory/<%= currentDirectory.parentId %>" class="btn btn-secondary mb-3">Back to Parent Directory</a>
+      <% } %>
+    </span>
     <% if (currentDirectory.children.length > 0) { %>
     <h3>Subdirectories</h3>
     <ul class="list-group mb-4">

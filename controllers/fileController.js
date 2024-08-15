@@ -2,23 +2,45 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const path = require("path");
 
+// Render the upload page with a dropdown of directories
+exports.renderUploadPage = async (req, res) => {
+  const userId = req.userId;
+
+  // Fetch all directories belonging to the user
+  const directories = await prisma.directory.findMany({
+    where: { userId },
+  });
+
+  res.render("upload", { directories, user: req.userId });
+};
+
+// Upload a file to the selected directory or root if none is selected
 exports.uploadFile = async (req, res) => {
   const file = req.file;
-  const userId = req.userId;
+  const userId = req.user.id;
   const directoryId = req.body.directoryId
     ? parseInt(req.body.directoryId)
     : null;
+
+  // If no directoryId is provided, default to the user's root directory
+  const targetDirectoryId =
+    directoryId ||
+    (
+      await prisma.directory.findFirst({
+        where: { userId, parentId: null },
+      })
+    ).id;
 
   const newFile = await prisma.file.create({
     data: {
       filename: file.originalname,
       path: file.path,
       userId: userId,
-      directoryId: directoryId,
+      directoryId: targetDirectoryId,
     },
   });
 
-  res.send(newFile);
+  res.redirect("/directory"); // Redirect to the files page after upload
 };
 
 exports.getFiles = async (req, res) => {

@@ -1,26 +1,60 @@
-const prisma = require("../../prisma/client"); // Adjust path as needed
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+exports.renderCreateDirectoryPage = async (req, res) => {
+  const userId = req.user.id;
+
+  // Fetch all directories belonging to the user
+  const directories = await prisma.directory.findMany({
+    where: { userId },
+  });
+
+  res.render("create-directory", { directories, user: req.user.id });
+};
 
 // Create a new directory
 exports.createDirectory = async (req, res) => {
-  const { name, parentId } = req.body;
+  const { directoryName, parentId } = req.body;
   const userId = req.user.id;
 
-  const directory = await prisma.directory.create({
+  // Create the new directory
+  await prisma.directory.create({
     data: {
-      name,
-      userId,
-      parentId: parentId ? parseInt(parentId) : null,
+      name: directoryName,
+      userId: userId,
+      parentId: parentId ? parseInt(parentId) : null, // Parent ID, or null if root
     },
   });
 
-  res.send(directory);
+  res.redirect("/directory"); // Redirect back to the files page after creation
 };
 
 // Read all directories and files within a directory
 exports.getDirectoryContents = async (req, res) => {
-  const directoryId = parseInt(req.params.id);
   const userId = req.user.id;
 
+  // Check if the user has a root directory
+  let rootDirectory = await prisma.directory.findFirst({
+    where: {
+      userId: userId,
+      parentId: null, // Ensures it's a root directory
+    },
+  });
+
+  // If no root directory exists, create one
+  if (!rootDirectory) {
+    rootDirectory = await prisma.directory.create({
+      data: {
+        name: "Root",
+        userId: userId,
+      },
+    });
+  }
+
+  // Get the directory contents (files and subdirectories)
+  const directoryId = req.params.id
+    ? parseInt(req.params.id)
+    : rootDirectory.id;
   const directory = await prisma.directory.findUnique({
     where: { id: directoryId },
     include: {
@@ -80,5 +114,5 @@ exports.deleteDirectory = async (req, res) => {
     where: { id: directoryId },
   });
 
-  res.send({ message: "Directory and its contents deleted successfully" });
+  res.send({ message: "Directory deleted successfully" });
 };
