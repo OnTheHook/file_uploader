@@ -9,7 +9,23 @@ exports.renderCreateDirectoryPage = async (req, res) => {
     where: { userId },
   });
 
-  res.render("create-directory", { directories, user: req.user.id });
+  res.render("create-directory", { directories, user: req.user });
+};
+
+// Render the manage directory page
+exports.renderManageDirectoryPage = async (req, res) => {
+  const userId = req.user.id;
+  const directoryId = parseInt(req.params.id);
+
+  const directory = await prisma.directory.findUnique({
+    where: { id: directoryId },
+  });
+
+  if (!directory || directory.userId !== userId) {
+    return res.status(403).send("Access denied");
+  }
+
+  res.render("manage-directory", { directory, user: req.user });
 };
 
 // Create a new directory
@@ -67,34 +83,14 @@ exports.getDirectoryContents = async (req, res) => {
     return res.status(403).send("Access denied");
   }
 
-  res.render("files", { currentDirectory: directory, user: req.user.id });
+  res.render("files", { currentDirectory: directory, user: req.user });
 };
 
 // Update a directory's name
 exports.updateDirectory = async (req, res) => {
-  const { id, name } = req.body;
-  const userId = req.user.id;
-
-  const directory = await prisma.directory.findUnique({
-    where: { id: parseInt(id) },
-  });
-
-  if (!directory || directory.userId !== userId) {
-    return res.status(403).send("Access denied");
-  }
-
-  const updatedDirectory = await prisma.directory.update({
-    where: { id: directory.id },
-    data: { name },
-  });
-
-  res.send(updatedDirectory);
-};
-
-// Delete a directory and its contents
-exports.deleteDirectory = async (req, res) => {
   const directoryId = parseInt(req.params.id);
-  const userId = req.userId;
+  const userId = req.user.id;
+  const { directoryName } = req.body;
 
   const directory = await prisma.directory.findUnique({
     where: { id: directoryId },
@@ -104,15 +100,39 @@ exports.deleteDirectory = async (req, res) => {
     return res.status(403).send("Access denied");
   }
 
-  if (directory.files || directory.children) {
+  await prisma.directory.update({
+    where: { id: directoryId },
+    data: { name: directoryName },
+  });
+
+  res.redirect("/directory");
+};
+
+// Delete a directory
+exports.deleteDirectory = async (req, res) => {
+  const directoryId = parseInt(req.params.id);
+  const userId = req.user.id;
+
+  const directory = await prisma.directory.findUnique({
+    where: { id: directoryId },
+    include: { files: true, children: true },
+  });
+
+  if (!directory || directory.userId !== userId) {
+    return res.status(403).send("Access denied");
+  }
+  if (directory.parentId === null) {
+    return res.send("Cannot delete root directory.");
+  }
+
+  if (directory.files.length > 0 || directory.children.length > 0) {
     return res.send(
-      "Delete all files and folders in directory before deleting it"
+      "Delete all files and folders in directory before deleting it."
     );
   }
-  // Delete directory and all associated files and subdirectories
   await prisma.directory.delete({
     where: { id: directoryId },
   });
 
-  res.send({ message: "Directory deleted successfully" });
+  res.redirect("/directory");
 };

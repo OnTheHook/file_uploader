@@ -38,5 +38,19 @@ router.delete(
   auth.ensureAuthenticated,
   directoryController.deleteDirectory
 );
-
+router.get(
+  "/directory/manage/:id",
+  auth.ensureAuthenticated,
+  directoryController.renderManageDirectoryPage
+);
+router.post(
+  "/directory/update/:id",
+  auth.ensureAuthenticated,
+  directoryController.updateDirectory
+);
+router.post(
+  "/directory/delete/:id",
+  auth.ensureAuthenticated,
+  directoryController.deleteDirectory
+);
 module.exports = router;

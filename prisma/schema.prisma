@@ -32,6 +32,7 @@ model File {
   id          Int        @id @default(autoincrement())
   filename    String
   path        String
+  createdAt   DateTime   @default(now())
   userId      Int
   user        User       @relation(fields: [userId], references: [id])
   Directory   Directory? @relation(fields: [directoryId], references: [id])

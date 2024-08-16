@@ -18,6 +18,11 @@ router.post(
   fileController.uploadFile
 );
 // router.get("/files", auth.ensureAuthenticated, fileController.getFiles);
+router.get(
+  "/files/delete/:id",
+  auth.ensureAuthenticated,
+  fileController.deleteFile
+);
 router.get("/files/:id", auth.ensureAuthenticated, fileController.getFile);
 
 module.exports = router;
