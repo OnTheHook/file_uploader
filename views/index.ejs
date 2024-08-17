@@ -4,18 +4,20 @@
 
 <body>
   <%- include('./partials/_header', { user: user }) %>
-  <% if (user) {%>
-  <h1>WELCOME BACK <%= user.username %></h1>
-  <a href="/auth/logout">LOG OUT</a>
-  <% } else { %>
-  <h1>please log in</h1>
-  <form action="/auth/login" method="POST">
-    <label for="username">Username</label>
-    <input id="username" name="username" placeholder="username" type="text" />
-    <label for="password">Password</label>
-    <input id="password" name="password" type="password" />
-    <button>Log In</button>
-  </form>
-  <%}%>
+  <div class="container">
+    <% if (user) {%>
+    <h1>WELCOME BACK <%= user.username %></h1>
+    <a href="/auth/logout">LOG OUT</a>
+    <% } else { %>
+    <h1>please log in</h1>
+    <form action="/auth/login" method="POST">
+      <label for="username">Username</label>
+      <input id="username" name="username" placeholder="username" type="text" />
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" />
+      <button>Log In</button>
+    </form>
+    <%}%>
+</div>
   </body>
 </html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<%- include('./partials/_head', { title: 'File Details' }) %>
+
+<body>
+  <%- include('./partials/_header', { user: user }) %>
+
+  <div class="container mt-4">
+    <h2>File Details</h2>
+
+    <table class="table table-bordered">
+      <tbody>
+        <tr>
+          <th scope="row">Filename</th>
+          <td><%= file.filename %></td>
+        </tr>
+        <tr>
+          <th scope="row">Directory</th>
+          <td><%= file.directory ? file.directory.name : 'Root' %></td>
+        </tr>
+        <tr>
+          <th scope="row">Uploaded At</th>
+          <td><%= new Date(file.createdAt).toLocaleString() %></td>
+        </tr>
+        <tr>
+          <th scope="row">File Size</th>
+          <td><%= (file.size / 1024).toFixed(2) %> KB</td>
+        </tr>
+        <tr>
+          <th scope="row">File Path</th>
+          <td><%= file.path %></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <a href="/files/download/<%= file.id %>" class="btn btn-primary mt-3">Download</a>
+    <a href="/directory" class="btn btn-secondary mt-3">Back to Files</a>
+  </div>
+</body>
+
+</html>

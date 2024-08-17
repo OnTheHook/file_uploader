@@ -34,6 +34,7 @@ model File {
   path        String
   createdAt   DateTime   @default(now())
   userId      Int
+  size        Int        @default(0)
   user        User       @relation(fields: [userId], references: [id])
   Directory   Directory? @relation(fields: [directoryId], references: [id])
   directoryId Int?

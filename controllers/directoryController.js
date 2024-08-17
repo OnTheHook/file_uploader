@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const { getFullPath } = require("../utils/directoryHelper");
 
 exports.renderCreateDirectoryPage = async (req, res) => {
   const userId = req.user.id;
@@ -83,7 +84,14 @@ exports.getDirectoryContents = async (req, res) => {
     return res.status(403).send("Access denied");
   }
 
-  res.render("files", { currentDirectory: directory, user: req.user });
+  let fullPath =
+    directory.name === "Root" ? "Root" : await getFullPath(directory, prisma);
+
+  res.render("files", {
+    currentDirectory: directory,
+    user: req.user,
+    fullPath,
+  });
 };
 
 // Update a directory's name

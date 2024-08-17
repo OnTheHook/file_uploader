@@ -35,6 +35,7 @@ exports.uploadFile = async (req, res) => {
     data: {
       filename: file.originalname,
       path: file.path,
+      size: file.size,
       userId: userId,
       directoryId: targetDirectoryId,
     },
@@ -70,11 +71,14 @@ exports.getFileDetails = async (req, res) => {
 
   const file = await prisma.file.findUnique({
     where: { id: fileId },
+    include: { Directory: true },
   });
 
+  console.log(file);
   if (!file || file.userId !== userId) {
     return res.status(403).send("Access denied");
   }
+  res.render("file-details", { file, user: req.user });
 };
 
 exports.deleteFile = async (req, res) => {

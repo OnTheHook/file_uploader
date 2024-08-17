@@ -23,6 +23,15 @@ router.get(
   auth.ensureAuthenticated,
   fileController.deleteFile
 );
-router.get("/files/:id", auth.ensureAuthenticated, fileController.getFile);
+router.get(
+  "/files/download/:id",
+  auth.ensureAuthenticated,
+  fileController.getFile
+);
+router.get(
+  "/files/view/:id",
+  auth.ensureAuthenticated,
+  fileController.getFileDetails
+);
 
 module.exports = router;

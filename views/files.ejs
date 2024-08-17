@@ -6,7 +6,7 @@
   <%- include('./partials/_header', { user: user }) %>
 
   <div class="container mt-4">
-    <h2>My Files in "<%= currentDirectory.name || 'Root' %>"</h2>
+    <h2>My Files in "<%= fullPath %>"</h2>
 
     <span class="align-baseline">
       <a href="/directory/create" class="btn btn-success mb-3">Create New Directory</a>
@@ -32,9 +32,9 @@
     <ul class="list-group">
       <% currentDirectory.files.forEach(file => { %>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span><%= file.filename %></span>
+        <span><a href="/files/view/<%= file.id %>"><%= file.filename %></a></span>
         <span>
-          <a href="/files/<%= file.id %>" class="btn btn-primary btn-sm">Download</a>
+          <a href="/files/download/<%= file.id %>" class="btn btn-primary btn-sm">Download</a>
           <a href="/files/delete/<%= file.id %>" class="btn btn-danger btn-sm">Delete</a>
         </span>
       </li>
