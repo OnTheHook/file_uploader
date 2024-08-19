@@ -1,6 +1,14 @@
+require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const { createClient } = require("@supabase/supabase-js");
+const fs = require("fs");
 const path = require("path");
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
+const prisma = new PrismaClient();
 
 // Render the upload page with a dropdown of directories
 exports.renderUploadPage = async (req, res) => {
@@ -31,10 +39,22 @@ exports.uploadFile = async (req, res) => {
       })
     ).id;
 
+  const filePath = path.resolve(file.path);
+
+  const { data, error } = await supabase.storage
+    .from("uploads")
+    .upload(`public/${file.originalname}`, fs.createReadStream(filePath), {
+      contentType: file.mimetype,
+    });
+
+  if (error) return res.status(400).json({ error });
+
+  fs.unlinkSync(filePath);
+
   const newFile = await prisma.file.create({
     data: {
       filename: file.originalname,
-      path: file.path,
+      path: data.path,
       size: file.size,
       userId: userId,
       directoryId: targetDirectoryId,
@@ -62,7 +82,13 @@ exports.getFile = async (req, res) => {
     return res.status(403).send("Access denied");
   }
 
-  res.download(file.path, file.filename);
+  const { data, error } = await supabase.storage
+    .from("uploads")
+    .createSignedUrl(file.path, 60);
+
+  if (error) return res.status(400).json({ error });
+
+  res.redirect(data.signedUrl);
 };
 
 exports.getFileDetails = async (req, res) => {
