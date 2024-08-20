@@ -4,7 +4,10 @@ const fileController = require("../controllers/fileController");
 const auth = require("../middleware/authMiddleware");
 const multer = require("multer");
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({
+  dest: "uploads/",
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 router.get(
   "/upload",
@@ -17,7 +20,7 @@ router.post(
   upload.single("file"),
   fileController.uploadFile
 );
-// router.get("/files", auth.ensureAuthenticated, fileController.getFiles);
+
 router.get(
   "/files/delete/:id",
   auth.ensureAuthenticated,

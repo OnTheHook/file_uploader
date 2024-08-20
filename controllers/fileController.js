@@ -40,28 +40,34 @@ exports.uploadFile = async (req, res) => {
     ).id;
 
   const filePath = path.resolve(file.path);
+  const readStream = fs.createReadStream(filePath);
+  try {
+    const { data, error } = await supabase.storage
+      .from("uploads")
+      .upload(`public/${file.originalname}`, readStream, {
+        contentType: file.mimetype,
+        duplex: "half",
+      });
 
-  const { data, error } = await supabase.storage
-    .from("uploads")
-    .upload(`public/${file.originalname}`, fs.createReadStream(filePath), {
-      contentType: file.mimetype,
+    if (error) return res.status(400).json({ error });
+
+    fs.unlinkSync(filePath);
+
+    const newFile = await prisma.file.create({
+      data: {
+        filename: file.originalname,
+        path: data.path,
+        size: file.size,
+        userId: userId,
+        directoryId: targetDirectoryId,
+      },
     });
 
-  if (error) return res.status(400).json({ error });
-
-  fs.unlinkSync(filePath);
-
-  const newFile = await prisma.file.create({
-    data: {
-      filename: file.originalname,
-      path: data.path,
-      size: file.size,
-      userId: userId,
-      directoryId: targetDirectoryId,
-    },
-  });
-
-  res.redirect("/directory"); // Redirect to the files page after upload
+    res.redirect("/directory"); // Redirect to the files page after upload
+  } catch (error) {
+    readStream.destroy();
+    res.status(500).json({ error: error.message });
+  }
 };
 
 exports.getFiles = async (req, res) => {
@@ -100,7 +106,6 @@ exports.getFileDetails = async (req, res) => {
     include: { Directory: true },
   });
 
-  console.log(file);
   if (!file || file.userId !== userId) {
     return res.status(403).send("Access denied");
   }
@@ -110,19 +115,31 @@ exports.getFileDetails = async (req, res) => {
 exports.deleteFile = async (req, res) => {
   const userId = req.user.id;
   const fileId = parseInt(req.params.id);
+  try {
+    const file = await prisma.file.findUnique({
+      where: { id: fileId },
+    });
 
-  const file = await prisma.file.findUnique({
-    where: { id: fileId },
-  });
+    if (!file || file.userId !== userId) {
+      return res.status(403).send("Access denied");
+    }
+    const fileDirectory = file.directoryId;
 
-  if (!file || file.userId !== userId) {
-    return res.status(403).send("Access denied");
+    const { data, error } = await supabase.storage
+      .from("uploads")
+      .remove([file.path]);
+
+    if (error) return res.status(500).json({ error });
+
+    await prisma.file.delete({
+      where: { id: fileId },
+    });
+
+    res.redirect(`/directory/${fileDirectory}`);
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the file" });
   }
-  const fileDirectory = file.directoryId;
-
-  await prisma.file.delete({
-    where: { id: fileId },
-  });
-
-  res.redirect(`/directory/${fileDirectory}`);
 };
