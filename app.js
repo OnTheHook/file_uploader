@@ -20,6 +20,7 @@ const morgan = require("morgan");
 
 // Express stuff
 const app = express();
+app.set("trust proxy", true);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
@@ -51,8 +52,8 @@ app.use(
       httpOnly: true,
     },
     secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
     store: new PrismaSessionStore(new PrismaClient(), {
       checkPeriod: 2 * 60 * 1000, //ms
       dbRecordIdIsSessionId: true,

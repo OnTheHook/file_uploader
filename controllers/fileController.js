@@ -3,6 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const { createClient } = require("@supabase/supabase-js");
 const fs = require("fs");
 const path = require("path");
+const { v4: uuidv4 } = require("uuid");
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -39,23 +40,28 @@ exports.uploadFile = async (req, res) => {
       })
     ).id;
 
+  const uniqueId = uuidv4();
+  const originalName = path.parse(file.originalname).name;
+  const extension = path.extname(file.originalname);
+  const uniqueFileName = `${originalName}-${uniqueId}${extension}`;
+
   const filePath = path.resolve(file.path);
   const readStream = fs.createReadStream(filePath);
   try {
     const { data, error } = await supabase.storage
       .from("uploads")
-      .upload(`public/${file.originalname}`, readStream, {
+      .upload(`public/${userId}/${uniqueFileName}`, readStream, {
         contentType: file.mimetype,
         duplex: "half",
       });
 
-    if (error) return res.status(400).json({ error });
-
     fs.unlinkSync(filePath);
+
+    if (error) return res.status(400).json({ error });
 
     const newFile = await prisma.file.create({
       data: {
-        filename: file.originalname,
+        filename: uniqueFileName,
         path: data.path,
         size: file.size,
         userId: userId,
